@@ -23,7 +23,7 @@ type UrlCounter struct {
 
 func (u *UrlCounter) isVisited(url string) bool {
 	u.mux.Lock()
-	defer uc.mux.Unlock()
+	defer u.mux.Unlock()
 	u.v[url]++
 	// 如果count大于1说明已经抓取过，返回true
 	if count := u.v[url]; count > 1 {
@@ -35,11 +35,12 @@ func (u *UrlCounter) isVisited(url string) bool {
 }
 
 // 全局变量，多个goroutine使用时需要加锁
-var uc = &UrlCounter{v: make(map[string]int)}
+// 实际项目中应避免使用全局变量
+// var uc = &UrlCounter{v: make(map[string]int)}
 
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
-func Crawl(url string, depth int, fetcher Fetcher) {
+func Crawl(url string, depth int, fetcher Fetcher, uc *UrlCounter) {
 	// 抓取结束后通知WaitGroup
 	defer uc.wg.Done()
 	if uc.isVisited(url) {
@@ -58,16 +59,17 @@ func Crawl(url string, depth int, fetcher Fetcher) {
 	for _, u := range urls {
 		// 启动goroutine时WaitGroup加1
 		uc.wg.Add(1)
-		go Crawl(u, depth-1, fetcher)
+		go Crawl(u, depth-1, fetcher, uc)
 	}
 
 	return
 }
 
 func main() {
+	uc := &UrlCounter{v: make(map[string]int)}
 	// 所有Crawl方法都调用了wg.Done()，所以这里需要加1
 	uc.wg.Add(1)
-	Crawl("https://golang.org/", 4, fetcher)
+	Crawl("https://golang.org/", 4, fetcher, uc)
 	// 等待所有goroutine执行完毕
 	uc.wg.Wait()
 }
