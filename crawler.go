@@ -1,5 +1,7 @@
 /*
+	A Tour of Go Exercise: Web Crawler
 	Go语言之旅 - 网络爬虫
+	https://tour.golang.org/concurrency/10
 */
 package main
 
