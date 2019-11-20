@@ -1,5 +1,7 @@
 /*
+	A Tour of Go Exercise: Equivalent Binary Trees
 	Go语言之旅 - 判断两个二叉树是否相等
+	https://tour.golang.org/concurrency/8
 */
 package main
 
